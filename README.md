@@ -62,10 +62,6 @@ icon-192.png           Android / favicon icon
 icon-512.png           Android splash / install icon
 ```
 
-## Hosting
-
-This is a static site with no build step. Push the files to a repo, then go to **Settings → Pages → Deploy from branch → main / root**.
-
 ## Credits
 
 - Game search data from [Wikipedia](https://www.wikipedia.org/) via the MediaWiki REST API.
