@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0f14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AFK">
+<title>AFK — by Samderverse</title>
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+  :root{
+    --bg:#0d0f14; --panel:#161a22; --panel2:#1e2330; --line:#2a3040;
+    --text:#eef1f7; --muted:#8b93a7; --accent:#ff3d7f; --accent2:#ffb800;
+    --ok:#2bd67b; --wa:#25d366; --sms:#34aaff; --radius:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px}
+  body{padding:env(safe-area-inset-top) 0 calc(76px + env(safe-area-inset-bottom))}
+  main{max-width:560px;margin:0 auto;padding:16px}
+  h1{font-size:1.9rem;margin:6px 0 2px;letter-spacing:-.02em}
+  h1 span{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  h2{font-size:1.05rem;margin:22px 0 10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+  .sub{color:var(--muted);margin:0 0 8px;font-size:.92rem}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:12px}
+  button,.btn{font:inherit;border:0;border-radius:12px;padding:12px 16px;background:var(--panel2);color:var(--text);cursor:pointer;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+  button:active,.btn:active{transform:scale(.97)}
+  .primary{background:linear-gradient(90deg,var(--accent),#ff6a3d);color:#fff}
+  .big{width:100%;padding:16px;font-size:1.1rem}
+  .ghost{background:transparent;border:1px solid var(--line)}
+  .danger{color:#ff6b6b}
+  .small{padding:7px 11px;font-size:.85rem;border-radius:10px}
+  input,select,textarea{font:inherit;width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px}
+  textarea{min-height:110px;resize:vertical}
+  label{display:block;font-size:.85rem;color:var(--muted);margin:10px 0 5px}
+  .row{display:flex;gap:8px;align-items:center}
+  .row>*{flex:1}
+  .hidden{display:none!important}
+  /* game tiles */
+  .games{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .game{position:relative;border-radius:14px;overflow:hidden;background:var(--panel2);border:2px solid transparent;cursor:pointer;min-height:96px;display:flex;align-items:flex-end}
+  .game img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55}
+  .game .gt{position:relative;padding:10px;font-weight:700;font-size:.95rem;text-shadow:0 1px 4px #000;line-height:1.2}
+  .game .gt small{display:block;font-weight:500;color:#cfd5e3;font-size:.75rem;margin-top:2px}
+  .game.sel{border-color:var(--accent)}
+  .game .ph{position:absolute;inset:0;display:grid;place-items:center;font-size:2.4rem;opacity:.25}
+  /* search results */
+  .results{margin-top:8px;display:flex;flex-direction:column;gap:6px;max-height:340px;overflow:auto}
+  .res{display:flex;gap:10px;align-items:center;background:var(--panel2);border-radius:12px;padding:8px;cursor:pointer;border:1px solid transparent}
+  .res:hover{border-color:var(--line)}
+  .res img,.res .noimg{width:46px;height:46px;border-radius:8px;object-fit:cover;flex:none;background:#000;display:grid;place-items:center}
+  .res .t{font-weight:600}
+  .res .d{font-size:.8rem;color:var(--muted)}
+  /* contacts */
+  .contact{display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;background:var(--panel2);margin-bottom:6px;cursor:pointer;border:2px solid transparent}
+  .contact.sel{border-color:var(--accent)}
+  .avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:800;flex:none;background:#2c3446}
+  .cmeta{flex:1;min-width:0}
+  .cmeta .n{font-weight:600}
+  .cmeta .p{font-size:.8rem;color:var(--muted)}
+  .chip{font-size:.72rem;padding:3px 8px;border-radius:99px;font-weight:700}
+  .chip.wa{background:#103a24;color:var(--wa)} .chip.sms{background:#0f2b44;color:var(--sms)} .chip.share{background:#3a2a0d;color:var(--accent2)}
+  .tick{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;flex:none;font-size:.8rem}
+  .contact.sel .tick{background:var(--accent);border-color:var(--accent)}
+  /* send queue */
+  .q{display:flex;align-items:center;gap:10px;padding:10px;background:var(--panel2);border-radius:12px;margin-bottom:6px}
+  .q.done{opacity:.5}
+  .q .btn{padding:9px 14px;font-size:.9rem}
+  .btn.wa{background:var(--wa);color:#04210f} .btn.sms{background:var(--sms);color:#03182a} .btn.share{background:var(--accent2);color:#2a1d00}
+  /* live session */
+  .live{text-align:center;padding:26px 14px;background:radial-gradient(circle at 50% 0%,#3a1430,var(--panel) 70%)}
+  .pulse{display:inline-block;width:10px;height:10px;background:var(--accent);border-radius:50%;margin-right:6px;animation:p 1.4s infinite}
+  @keyframes p{0%{box-shadow:0 0 0 0 #ff3d7f99}100%{box-shadow:0 0 0 14px #ff3d7f00}}
+  .timer{font-size:3rem;font-variant-numeric:tabular-nums;font-weight:800;margin:8px 0;letter-spacing:-.02em}
+  .livegame{font-size:1.25rem;font-weight:700}
+  .stat{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);margin-top:4px}
+  .preview{white-space:pre-wrap;background:#0b0d12;border:1px dashed var(--line);border-radius:12px;padding:12px;font-size:.92rem;color:#d9deea}
+  /* nav */
+  nav{position:fixed;left:0;right:0;bottom:0;background:#0d0f14ee;backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:8px 6px calc(8px + env(safe-area-inset-bottom));z-index:10}
+  nav button{background:none;flex:1;flex-direction:column;gap:2px;font-size:.72rem;color:var(--muted);padding:6px}
+  nav button b{font-size:1.35rem;font-weight:400}
+  nav button.on{color:var(--text)}
+  .empty{color:var(--muted);text-align:center;padding:18px;font-size:.92rem}
+  .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#fff;color:#000;padding:10px 16px;border-radius:99px;font-weight:600;font-size:.9rem;z-index:20;opacity:0;transition:.25s;pointer-events:none}
+  .toast.on{opacity:1}
+  .credit{text-align:center;color:var(--muted);font-size:.78rem;margin:26px 0 8px}
+  .vars{font-size:.8rem;color:var(--muted);margin-top:6px}
+  .vars code{background:var(--panel2);padding:2px 6px;border-radius:6px;color:var(--accent2)}
+  /* report */
+  .seg{display:flex;background:var(--panel2);border-radius:12px;padding:4px;gap:4px;margin-bottom:12px}
+  .seg button{flex:1;padding:9px;font-size:.88rem;background:none;color:var(--muted)}
+  .seg button.on{background:var(--panel);color:var(--text);box-shadow:0 1px 6px #0006}
+  .big-num{font-size:2.4rem;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  .delta{font-size:.85rem;font-weight:700}
+  .delta.up{color:var(--accent)} .delta.down{color:var(--ok)}
+  .bars{position:relative;display:grid;grid-template-columns:repeat(7,1fr);gap:8px;height:150px;align-items:end;margin-top:16px;border-bottom:1px solid var(--line)}
+  .bars .b{display:flex;flex-direction:column-reverse;border-radius:6px 6px 0 0;overflow:hidden;min-height:2px;background:#2a3040}
+  .bars .b i{display:block}
+  .bars .avg{position:absolute;left:0;right:0;border-top:2px dashed var(--ok);pointer-events:none}
+  .bars .avg span{position:absolute;right:0;top:-18px;font-size:.7rem;color:var(--ok);font-weight:700}
+  .blabels{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;text-align:center;font-size:.72rem;color:var(--muted);margin-top:4px}
+  .gl{margin:10px 0}
+  .gl .top{display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:4px}
+  .gl .track{height:8px;background:var(--panel2);border-radius:99px;overflow:hidden}
+  .gl .track i{display:block;height:100%;border-radius:99px}
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .tile{background:var(--panel2);border-radius:12px;padding:12px}
+  .tile .k{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .tile .v{font-size:1.2rem;font-weight:800;margin-top:2px}
+  .verdict{font-size:1.05rem;font-weight:700;line-height:1.35}
+  .x{background:none;color:var(--muted);padding:6px 8px;font-size:1rem}
+  dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:18px;width:min(92vw,460px)}
+  dialog::backdrop{background:#000a}
+</style>
+</head>
+<body>
+<main>
+
+<!-- ============ PLAY ============ -->
+<section id="v-play">
+  <h1><span>AFK</span> 🎮</h1>
+  <p class="sub">Tell your people you've gone dark.</p>
+
+  <!-- Live session -->
+  <div id="liveCard" class="card live hidden">
+    <div><span class="pulse"></span><b>NOW PLAYING</b></div>
+    <div class="livegame" id="liveGame"></div>
+    <div class="timer" id="liveTimer">0:00:00</div>
+    <div class="sub" id="liveWho"></div>
+    <button class="primary big" id="btnBack" style="margin-top:10px">I'm back 👋</button>
+    <button class="ghost small" id="btnCancel" style="margin-top:10px">Cancel session (don't log)</button>
+  </div>
+
+  <!-- Setup -->
+  <div id="setup">
+    <h2>1 · What are you playing?</h2>
+    <div id="quickGames" class="games"></div>
+    <div class="card" style="margin-top:10px">
+      <div class="row">
+        <input id="q" placeholder="Search any game… e.g. GTA 6" autocomplete="off" enterkeyhint="search">
+        <button id="btnSearch" style="flex:none">Search</button>
+      </div>
+      <div id="results" class="results"></div>
+    </div>
+
+    <h2>2 · Who needs to know?</h2>
+    <div class="row" style="margin-bottom:8px">
+      <button class="ghost small" id="selAll">Select all</button>
+      <button class="ghost small" id="selNone">Clear</button>
+      <button class="ghost small" id="addContactQuick">+ Contact</button>
+    </div>
+    <div id="pickContacts"></div>
+
+    <h2>3 · The message</h2>
+    <div class="card">
+      <div class="preview" id="preview"></div>
+      <p class="vars">Each person gets their own name dropped in. Edit the wording in ⚙️ Settings.</p>
+    </div>
+
+    <button class="primary big" id="btnGo">Go AFK 🚀</button>
+  </div>
+</section>
+
+<!-- ============ LIBRARY ============ -->
+<section id="v-library" class="hidden">
+  <h1>Library</h1>
+  <p class="sub">Games you've logged. Tap one to start a session.</p>
+  <div id="libStats" class="card"></div>
+  <div id="libList"></div>
+  <h2>Recent sessions</h2>
+  <div id="history"></div>
+</section>
+
+<!-- ============ REPORT ============ -->
+<section id="v-report" class="hidden">
+  <h1>Game Time</h1>
+  <p class="sub">Like Screen Time, but more incriminating.</p>
+  <div class="seg" id="seg">
+    <button data-r="0" class="on">This week</button>
+    <button data-r="1">Last week</button>
+    <button data-r="all">All time</button>
+  </div>
+  <div id="report"></div>
+</section>
+
+<!-- ============ CONTACTS ============ -->
+<section id="v-contacts" class="hidden">
+  <h1>Contacts</h1>
+  <p class="sub">Who gets told, and which app opens for each.</p>
+  <button class="primary big" id="btnAddContact">+ Add contact</button>
+  <button class="ghost big hidden" id="btnPickPhone" style="margin-top:8px">📇 Import from phone</button>
+  <div id="contactList" style="margin-top:14px"></div>
+</section>
+
+<!-- ============ SETTINGS ============ -->
+<section id="v-settings" class="hidden">
+  <h1>Settings</h1>
+  <div class="card">
+    <label>Your name (as it appears in messages)</label>
+    <input id="sMe" placeholder="e.g. Sam">
+    <label>"Going AFK" message</label>
+    <textarea id="sStart"></textarea>
+    <label>"I'm back" message</label>
+    <textarea id="sEnd"></textarea>
+    <p class="vars">Tags: <code>{name}</code> contact · <code>{me}</code> you · <code>{game}</code> game · <code>{time}</code> session length (back message only) · <code>{week}</code> total game time this week</p>
+    <label class="row" style="color:var(--text)"><input type="checkbox" id="sSig" style="width:auto;flex:none"> Add "Message generated by AFK" footer</label>
+    <label class="row" style="color:var(--text)"><input type="checkbox" id="sAskBack" style="width:auto;flex:none"> Offer to send "I'm back" when I finish</label>
+    <div class="row" style="margin-top:12px">
+      <button id="btnSaveSettings" class="primary">Save</button>
+      <button id="btnResetMsg" class="ghost">Reset wording</button>
+    </div>
+  </div>
+  <h2>Backup</h2>
+  <div class="card row">
+    <button id="btnExport">Export</button>
+    <button id="btnImport">Import</button>
+    <input type="file" id="fileImport" accept="application/json" class="hidden">
+  </div>
+  <div class="card">
+    <p class="sub" style="margin:0">Game search uses Wikipedia, so new and upcoming releases show up without needing an API key. Everything else stays on this device.</p>
+  </div>
+</section>
+
+<p class="credit">AFK by Samderverse · v1.2</p>
+</main>
+
+<nav>
+  <button data-v="play" class="on"><b>🎮</b>Play</button>
+  <button data-v="library"><b>📚</b>Library</button>
+  <button data-v="report"><b>📊</b>Game Time</button>
+  <button data-v="contacts"><b>👥</b>Contacts</button>
+  <button data-v="settings"><b>⚙️</b>Settings</button>
+</nav>
+
+<!-- Send queue dialog -->
+<dialog id="dlgSend">
+  <h2 style="margin-top:0;color:var(--text)" id="sendTitle">Send it</h2>
+  <p class="sub" id="sendHint">Tap each one — your messaging app opens with the text ready. Hit send, then come back here for the next.</p>
+  <div id="queue"></div>
+  <div class="row" style="margin-top:12px">
+    <button id="btnCopyMsg" class="ghost">Copy text</button>
+    <button id="btnDoneSend" class="primary">Done</button>
+  </div>
+</dialog>
+
+<!-- Contact dialog -->
+<dialog id="dlgContact">
+  <h2 style="margin-top:0;color:var(--text)" id="cTitle">Add contact</h2>
+  <label>Name (what goes in "Hi {name}")</label>
+  <input id="cName" placeholder="e.g. Mum">
+  <label>Mobile number</label>
+  <input id="cPhone" type="tel" placeholder="07… or +44…">
+  <label>Send via</label>
+  <select id="cVia">
+    <option value="wa">WhatsApp</option>
+    <option value="sms">iMessage / SMS</option>
+    <option value="share">Share sheet (pick any app each time)</option>
+  </select>
+  <div class="row" style="margin-top:16px">
+    <button id="cDelete" class="ghost danger hidden">Delete</button>
+    <button id="cCancel" class="ghost">Cancel</button>
+    <button id="cSave" class="primary">Save</button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== AFK by Samderverse ===================== */
+const APP = 'AFK';
+const KEY = 'afk.v1';
+const DEFAULT_START = "Hi {name}, {me} is now playing {game} 🎮 so don't expect any replies for a while.";
+const DEFAULT_END = "Hi {name}, {me} is back from {game} after {time}. Normal service resumed 👋";
+const SIG = `\n\n— Message generated by ${APP}`;
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+let S = load();
+let selectedGame = null;            // {id,title,desc,img}
+let selectedContacts = new Set(S.lastRecipients || []);
+let tick = null;
+
+function load(){
+  try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s) return Object.assign(defaults(), s); }catch(e){}
+  return defaults();
+}
+function defaults(){
+  return { me:'', start:DEFAULT_START, end:DEFAULT_END, sig:true, askBack:true,
+           contacts:[], library:[], sessions:[], live:null, lastRecipients:[] };
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){ toast('Could not save on this device'); } }
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Math.random().toString(36).slice(2,10);
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('on'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),1800); }
+
+/* ---------- message building ---------- */
+function fmtDur(ms){
+  const m = Math.max(1, Math.round(ms/60000));
+  const h = Math.floor(m/60), r = m%60;
+  if(!h) return `${m} min${m===1?'':'s'}`;
+  return `${h} hr${h===1?'':'s'}${r?` ${r} min${r===1?'':'s'}`:''}`;
+}
+function build(tpl, contact, game, extra={}){
+  let t = tpl.replace(/\{name\}/g, contact ? contact.name : 'mate')
+             .replace(/\{me\}/g, S.me || 'I')
+             .replace(/\{game\}/g, game || 'a game')
+             .replace(/\{time\}/g, extra.time || 'a while')
+             .replace(/\{week\}/g, hm(weekTotal()));
+  if(!S.me) t = t.replace(/\bI is\b/g,'I am');   // grammar rescue when no name set
+  return t + (S.sig ? SIG : '');
+}
+
+/* ---------- deep links ---------- */
+function normPhone(p){
+  let d = String(p||'').replace(/[^\d+]/g,'');
+  if(d.startsWith('+')) d = d.slice(1);
+  else if(d.startsWith('00')) d = d.slice(2);
+  else if(d.startsWith('0')) d = '44' + d.slice(1);   // UK default
+  return d;
+}
+function linkFor(c, text){
+  const enc = encodeURIComponent(text);
+  if(c.via === 'wa'){
+    const n = normPhone(c.phone);
+    return n ? `https://wa.me/${n}?text=${enc}` : `https://wa.me/?text=${enc}`;
+  }
+  if(c.via === 'sms'){
+    const n = c.phone ? '+' + normPhone(c.phone) : '';
+    return `sms:${n}${isIOS ? '&' : '?'}body=${enc}`;
+  }
+  return null; // share sheet
+}
+
+/* ---------- navigation ---------- */
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => show(b.dataset.v));
+function show(v){
+  ['play','library','report','contacts','settings'].forEach(x => $('#v-'+x).classList.toggle('hidden', x!==v));
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.v===v));
+  if(v==='play') renderPlay();
+  if(v==='library') renderLibrary();
+  if(v==='report') renderReport();
+  if(v==='contacts') renderContacts();
+  if(v==='settings') renderSettings();
+  window.scrollTo(0,0);
+}
+
+/* ---------- PLAY ---------- */
+function gameTile(g, sel){
+  return `<div class="game ${sel?'sel':''}" data-id="${esc(g.id)}">
+    ${g.img ? `<img src="${esc(g.img)}" alt="" loading="lazy">` : `<div class="ph">🎮</div>`}
+    <div class="gt">${esc(g.title)}${g.desc?`<small>${esc(g.desc)}</small>`:''}</div></div>`;
+}
+function renderPlay(){
+  const live = S.live;
+  $('#liveCard').classList.toggle('hidden', !live);
+  $('#setup').classList.toggle('hidden', !!live);
+  if(live){ startTick(); return; }
+  stopTick();
+
+  const lib = [...S.library].sort((a,b)=>(b.last||0)-(a.last||0)).slice(0,6);
+  if(selectedGame && !lib.find(g=>g.id===selectedGame.id)) lib.unshift(selectedGame);
+  $('#quickGames').innerHTML = lib.length ? lib.map(g=>gameTile(g, selectedGame && selectedGame.id===g.id)).join('')
+    : `<div class="empty" style="grid-column:1/-1">Search for a game below — it'll be saved here for one-tap access.</div>`;
+  $('#quickGames').querySelectorAll('.game').forEach(el => el.onclick = () => {
+    selectedGame = lib.find(g=>g.id===el.dataset.id); renderPlay();
+  });
+
+  const cs = S.contacts;
+  $('#pickContacts').innerHTML = cs.length ? cs.map(c => `
+    <div class="contact ${selectedContacts.has(c.id)?'sel':''}" data-id="${c.id}">
+      <div class="avatar">${esc(c.name[0]||'?').toUpperCase()}</div>
+      <div class="cmeta"><div class="n">${esc(c.name)}</div><div class="p">${esc(c.phone||'No number')}</div></div>
+      ${viaChip(c.via)}<div class="tick">✓</div></div>`).join('')
+    : `<div class="empty">No contacts yet. Add the people who'll wonder why you've gone quiet.</div>`;
+  $('#pickContacts').querySelectorAll('.contact').forEach(el => el.onclick = () => {
+    const id = el.dataset.id; selectedContacts.has(id) ? selectedContacts.delete(id) : selectedContacts.add(id); renderPlay();
+  });
+  // drop deleted contacts from selection
+  selectedContacts = new Set([...selectedContacts].filter(id => cs.find(c=>c.id===id)));
+
+  const first = cs.find(c=>selectedContacts.has(c.id)) || {name:'Mum'};
+  $('#preview').textContent = build(S.start, first, selectedGame ? selectedGame.title : '[pick a game]');
+}
+function viaChip(v){ return v==='wa'?'<span class="chip wa">WhatsApp</span>':v==='sms'?'<span class="chip sms">iMessage/SMS</span>':'<span class="chip share">Share</span>'; }
+
+$('#selAll').onclick = () => { S.contacts.forEach(c=>selectedContacts.add(c.id)); renderPlay(); };
+$('#selNone').onclick = () => { selectedContacts.clear(); renderPlay(); };
+$('#addContactQuick').onclick = () => openContact();
+
+/* ---------- game search (Wikipedia, no key) ---------- */
+const GAME_RX = /video game|\bgame\b|expansion|remaster|remake|DLC/i;
+const NOT_GAME_RX = /board game|card game|game show|tabletop|sports? team|football|television|film|novel|album|song/i;
+async function wikiSearch(q){
+  const url = `https://en.wikipedia.org/w/rest.php/v1/search/page?q=${encodeURIComponent(q)}&limit=20`;
+  const r = await fetch(url); if(!r.ok) throw new Error('search failed');
+  const j = await r.json(); return j.pages || [];
+}
+async function searchGames(){
+  const q = $('#q').value.trim(); if(!q) return;
+  const box = $('#results'); box.innerHTML = `<div class="empty">Searching…</div>`;
+  let pages = [];
+  try{
+    const [a,b] = await Promise.allSettled([wikiSearch(q + ' video game'), wikiSearch(q)]);
+    pages = [...(a.value||[]), ...(b.value||[])];
+  }catch(e){}
+  const seen = new Set(); const games = [];
+  for(const p of pages){
+    if(seen.has(p.key)) continue; seen.add(p.key);
+    const d = p.description || '';
+    if(!GAME_RX.test(d) || NOT_GAME_RX.test(d)) continue;
+    games.push({ id:'w:'+p.key, title:p.title.replace(/ \((\d{4} )?video game\)$/,''), desc:d.replace(/^./,c=>c.toUpperCase()),
+                 img: p.thumbnail && p.thumbnail.url ? (p.thumbnail.url.startsWith('//')?'https:':'') + p.thumbnail.url.replace(/\/\d+px-/,'/320px-') : '' });
+  }
+  const custom = `<div class="res" data-custom="1"><div class="noimg">✏️</div><div><div class="t">Use "${esc(q)}"</div><div class="d">Add it as typed</div></div></div>`;
+  box.innerHTML = (games.length ? games.slice(0,12).map((g,i)=>`
+    <div class="res" data-i="${i}">${g.img?`<img src="${esc(g.img)}" alt="" loading="lazy">`:'<div class="noimg">🎮</div>'}
+    <div><div class="t">${esc(g.title)}</div><div class="d">${esc(g.desc)}</div></div></div>`).join('')
+    : `<div class="empty">${pages.length? 'No games matched' : "Couldn't reach search — check your connection"}.</div>`) + custom;
+  box.querySelectorAll('.res').forEach(el => el.onclick = () => {
+    const g = el.dataset.custom ? { id:'c:'+q.toLowerCase(), title:q, desc:'', img:'' } : games[+el.dataset.i];
+    selectedGame = addToLibrary(g);
+    box.innerHTML = ''; $('#q').value = '';
+    toast(`${g.title} added to library`); renderPlay();
+  });
+}
+$('#btnSearch').onclick = searchGames;
+$('#q').addEventListener('keydown', e => { if(e.key==='Enter') searchGames(); });
+
+function addToLibrary(g){
+  let ex = S.library.find(x=>x.id===g.id);
+  if(!ex){ ex = { ...g, added:Date.now(), sessions:0, total:0, last:0 }; S.library.push(ex); save(); }
+  return ex;
+}
+
+/* ---------- send flow ---------- */
+let queueText = '';
+function openQueue(kind){
+  const live = S.live;
+  const ids = kind==='start' ? [...selectedContacts] : live.recipients;
+  const recips = ids.map(id=>S.contacts.find(c=>c.id===id)).filter(Boolean);
+  const game = kind==='start' ? selectedGame.title : live.title;
+  const extra = kind==='end' ? { time: fmtDur(Date.now()-live.start) } : {};
+  const tpl = kind==='start' ? S.start : S.end;
+  $('#sendTitle').textContent = kind==='start' ? 'Tell them 📣' : 'Back online 👋';
+  queueText = build(tpl, {name:'all'}, game, extra);
+
+  $('#queue').innerHTML = recips.map((c,i) => {
+    const text = build(tpl, c, game, extra);
+    const href = linkFor(c, text);
+    const cls = c.via;
+    const label = c.via==='wa'?'WhatsApp':c.via==='sms'?(isIOS?'iMessage':'SMS'):'Share…';
+    return `<div class="q" id="q${i}"><div class="avatar">${esc(c.name[0]||'?').toUpperCase()}</div>
+      <div class="cmeta"><div class="n">${esc(c.name)}</div><div class="p">${esc(c.phone||'')}</div></div>
+      ${href ? `<a class="btn ${cls}" href="${esc(href)}" ${c.via==='wa'?'target="_blank" rel="noopener"':''} data-i="${i}">${label}</a>`
+             : `<button class="btn share" data-i="${i}" data-share="${esc(text)}">${label}</button>`}</div>`;
+  }).join('') || `<div class="empty">Nobody selected — that's fine, the session is still logged.</div>`;
+
+  $('#queue').querySelectorAll('[data-i]').forEach(el => el.addEventListener('click', async e => {
+    if(el.dataset.share !== undefined){
+      e.preventDefault();
+      const text = el.dataset.share;
+      if(navigator.share){ try{ await navigator.share({ text }); }catch(err){ return; } }
+      else { await copy(text); toast('Copied — paste it anywhere'); }
+    }
+    $('#q'+el.dataset.i).classList.add('done'); el.textContent = 'Sent ✓';
+  }));
+  $('#dlgSend').showModal();
+}
+async function copy(t){ try{ await navigator.clipboard.writeText(t); }catch(e){ const a=document.createElement('textarea'); a.value=t; document.body.appendChild(a); a.select(); document.execCommand('copy'); a.remove(); } }
+$('#btnCopyMsg').onclick = async () => { await copy(queueText); toast('Copied'); };
+$('#btnDoneSend').onclick = () => { $('#dlgSend').close(); renderPlay(); };
+
+$('#btnGo').onclick = () => {
+  if(!selectedGame) return toast('Pick a game first');
+  S.live = { gameId:selectedGame.id, title:selectedGame.title, start:Date.now(), recipients:[...selectedContacts] };
+  S.lastRecipients = [...selectedContacts];
+  save(); renderPlay(); openQueue('start');
+};
+
+function startTick(){
+  const l = S.live; $('#liveGame').textContent = l.title;
+  const names = l.recipients.map(id=>S.contacts.find(c=>c.id===id)?.name).filter(Boolean);
+  $('#liveWho').textContent = names.length ? `Told: ${names.join(', ')}` : 'Nobody told — stealth mode 🥷';
+  const upd = () => { const s = Math.floor((Date.now()-l.start)/1000);
+    $('#liveTimer').textContent = `${Math.floor(s/3600)}:${String(Math.floor(s/60)%60).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
+  upd(); clearInterval(tick); tick = setInterval(upd, 1000);
+}
+function stopTick(){ clearInterval(tick); tick=null; }
+
+$('#btnBack').onclick = () => {
+  const l = S.live; let dur = Date.now()-l.start;
+  if(dur > 6*3600e3){   // probably forgot to tap "I'm back"
+    const ans = prompt(`That's ${fmtDur(dur)}. Fair enough, or did you forget to tap "I'm back"?\nEnter the real hours played (e.g. 2.5) or leave as is:`, (dur/3600e3).toFixed(1));
+    const h = parseFloat(ans); if(h > 0) dur = Math.round(h*3600e3);
+  }
+  const g = S.library.find(x=>x.id===l.gameId);
+  if(g){ g.sessions++; g.total += dur; g.last = Date.now(); }
+  S.sessions.unshift({ gameId:l.gameId, title:l.title, start:l.start, dur, recipients:l.recipients.length });
+  S.sessions = S.sessions.slice(0,200);
+  const sendBack = S.askBack && l.recipients.length;
+  if(sendBack) openQueue('end');
+  S.live = null; save();
+  if(!sendBack){ toast(`Logged ${fmtDur(dur)} of ${l.title}`); renderPlay(); }
+};
+$('#btnCancel').onclick = () => { if(confirm('Cancel this session without logging it?')){ S.live=null; save(); renderPlay(); } };
+
+/* ---------- LIBRARY ---------- */
+function renderLibrary(){
+  const lib = [...S.library].sort((a,b)=>(b.last||b.added)-(a.last||a.added));
+  const total = lib.reduce((s,g)=>s+g.total,0), sess = lib.reduce((s,g)=>s+g.sessions,0);
+  const top = [...lib].sort((a,b)=>b.total-a.total)[0];
+  $('#libStats').innerHTML = `<div class="stat"><span>Games</span><b style="color:var(--text)">${lib.length}</b></div>
+    <div class="stat"><span>Sessions</span><b style="color:var(--text)">${sess}</b></div>
+    <div class="stat"><span>Time gone AFK</span><b style="color:var(--text)">${total?fmtDur(total):'—'}</b></div>
+    ${top && top.total ? `<div class="stat"><span>Most played</span><b style="color:var(--text)">${esc(top.title)}</b></div>`:''}`;
+  $('#libList').innerHTML = lib.length ? `<div class="games">${lib.map(g=>`
+    <div class="game" data-id="${esc(g.id)}">${g.img?`<img src="${esc(g.img)}" alt="" loading="lazy">`:'<div class="ph">🎮</div>'}
+    <div class="gt">${esc(g.title)}<small>${g.sessions} session${g.sessions===1?'':'s'}${g.total?' · '+fmtDur(g.total):''}</small></div></div>`).join('')}</div>
+    <p class="vars" style="text-align:center">Long-press a game to remove it.</p>`
+    : `<div class="empty">Nothing here yet. Search for a game on the Play tab.</div>`;
+  $('#libList').querySelectorAll('.game').forEach(el => {
+    el.onclick = () => { selectedGame = S.library.find(g=>g.id===el.dataset.id); show('play'); };
+    el.oncontextmenu = e => { e.preventDefault(); const g=S.library.find(x=>x.id===el.dataset.id);
+      if(confirm(`Remove ${g.title} from your library?`)){ S.library=S.library.filter(x=>x!==g); if(selectedGame?.id===g.id) selectedGame=null; save(); renderLibrary(); } };
+  });
+  $('#history').innerHTML = S.sessions.length ? S.sessions.slice(0,25).map((s,i)=>`
+    <div class="q"><div class="cmeta"><div class="n">${esc(s.title)}</div>
+    <div class="p">${new Date(s.start).toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})} · told ${s.recipients}</div></div>
+    <b>${fmtDur(s.dur)}</b><button class="x" data-del="${i}" aria-label="Delete">✕</button></div>`).join('') : `<div class="empty">No sessions logged yet.</div>`;
+  $('#history').querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+    const s = S.sessions[+b.dataset.del]; if(!confirm(`Delete this ${s.title} session?`)) return;
+    const g = S.library.find(x=>x.id===s.gameId); if(g){ g.sessions=Math.max(0,g.sessions-1); g.total=Math.max(0,g.total-s.dur); }
+    S.sessions.splice(+b.dataset.del,1); save(); renderLibrary();
+  });
+}
+
+/* ---------- GAME TIME REPORT ---------- */
+const PALETTE = ['#ff3d7f','#ffb800','#34aaff','#2bd67b','#a970ff','#ff7a3d','#3de0d0'];
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DAY = 864e5;
+let rSel = '0', demo = null;
+function hm(ms){ const m = Math.round(ms/60000), h = Math.floor(m/60); return h ? `${h}h ${m%60}m` : `${m}m`; }
+let colorMap = {};
+function buildColors(src){   // most-played games get the first (most distinct) colours
+  const tot = {}; src.forEach(s => tot[s.title] = (tot[s.title]||0) + s.dur);
+  colorMap = {}; Object.entries(tot).sort((a,b)=>b[1]-a[1]).forEach(([t],i) => colorMap[t] = PALETTE[i % PALETTE.length]);
+}
+function colorFor(t){ return colorMap[t] || PALETTE[0]; }
+function weekStart(off=0){ const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-((d.getDay()+6)%7)-7*off); return d.getTime(); }
+function dayIdx(ts){ return (new Date(ts).getDay()+6)%7; }
+function weekTotal(){ const f=weekStart(0); return S.sessions.filter(s=>s.start>=f).reduce((a,s)=>a+s.dur,0); }
+
+function verdict(avgMs){
+  const h = avgMs/3600e3;
+  if(h===0) return "Touching grass. Suspicious. 🌱";
+  if(h<0.5) return "Casual. Do you even own a controller?";
+  if(h<1.5) return "Healthy-ish. Your family still recognises you.";
+  if(h<3)   return "Committed. Someone has asked \"are you STILL on that?\"";
+  if(h<5)   return "Your sofa now has a you-shaped dent. 🛋️";
+  if(h<8)   return "Concerning. Your contacts have started a group chat about you.";
+  return "Legend status. Please blink. 👁️";
+}
+
+function computeReport(sel, src){
+  const now = Date.now();
+  let list, label, days = 7, prev = null, from, to;
+  if(sel === 'all'){
+    list = src; label = 'All time';
+    const first = list.length ? Math.min(...list.map(s=>s.start)) : now;
+    days = Math.max(1, Math.ceil((now - first)/DAY));
+  } else {
+    const off = +sel; from = weekStart(off); to = from + 7*DAY;
+    list = src.filter(s=>s.start>=from && s.start<to);
+    prev = src.filter(s=>s.start>=from-7*DAY && s.start<from).reduce((a,s)=>a+s.dur,0);
+    if(off===0) days = dayIdx(now)+1;
+    const fmt = t => new Date(t).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    label = off===0 ? 'This week' : 'Last week';
+    label += ` · ${fmt(from)} – ${fmt(to-DAY)}`;
+  }
+  const total = list.reduce((a,s)=>a+s.dur,0);
+  // per day, stacked per game
+  const byDay = DAYS.map(()=>({}));
+  list.forEach(s => { const d = byDay[dayIdx(s.start)]; d[s.title] = (d[s.title]||0) + s.dur; });
+  const byGame = {}; list.forEach(s => byGame[s.title] = (byGame[s.title]||0) + s.dur);
+  const games = Object.entries(byGame).sort((a,b)=>b[1]-a[1]);
+  const longest = list.reduce((m,s)=>s.dur>(m?.dur||0)?s:m, null);
+  // latest finish: treat 00:00–05:59 as "past midnight"
+  let late = null, lateScore = -1;
+  list.forEach(s => { const e = new Date(s.start+s.dur); let h = e.getHours()+e.getMinutes()/60; if(h<6) h+=24; if(h>lateScore){ lateScore=h; late=e; } });
+  const dayTotals = byDay.map(d=>Object.values(d).reduce((a,b)=>a+b,0));
+  const bestDay = dayTotals.some(x=>x) ? DAYS[dayTotals.indexOf(Math.max(...dayTotals))] : '—';
+  return { label, list, total, avg: total/days, prev, byDay, dayTotals, games, longest, late, bestDay, sel };
+}
+
+function renderReport(){
+  document.querySelectorAll('#seg button').forEach(b => b.classList.toggle('on', b.dataset.r===rSel));
+  const src = demo || S.sessions;
+  buildColors(src);
+  const r = computeReport(rSel, src);
+  const box = $('#report');
+  if(!src.length){
+    box.innerHTML = `<div class="card empty">No game time logged yet.<br>Start a session from the Play tab, and when you tap "I'm back" it lands here.<br><br>
+      <button class="ghost small" id="btnDemo">Preview with sample data</button></div>`;
+    $('#btnDemo').onclick = () => { demo = makeDemo(); renderReport(); };
+    return;
+  }
+  let deltaHtml = '';
+  if(r.prev !== null && r.prev > 0 && rSel !== 'all'){
+    const pct = Math.round((r.total - r.prev)/r.prev*100);
+    deltaHtml = `<span class="delta ${pct>=0?'up':'down'}">${pct>=0?'▲':'▼'} ${Math.abs(pct)}% from the week before</span>`;
+  }
+  const max = Math.max(...r.dayTotals, 1);
+  const avgPct = Math.min(100, r.avg/max*100);
+  const bars = r.byDay.map(d => {
+    const tot = Object.values(d).reduce((a,b)=>a+b,0);
+    const segs = Object.entries(d).map(([t,ms]) => `<i style="height:${ms/max*150}px;background:${colorFor(t)}"></i>`).join('');
+    return `<div class="b" style="height:${Math.max(2,tot/max*150)}px">${segs}</div>`;
+  }).join('');
+  const topMax = r.games[0]?.[1] || 1;
+  box.innerHTML = `
+    ${demo ? `<div class="card" style="border-color:var(--accent2)"><b>Sample data</b> — this is what it'll look like. <button class="ghost small" id="btnDemoOff">Hide</button></div>` : ''}
+    <div class="card">
+      <div class="sub" style="margin:0">${esc(r.label)}</div>
+      <div class="sub" style="margin:8px 0 0">Daily average</div>
+      <div class="big-num">${hm(r.avg)}</div>
+      ${deltaHtml}
+      <div class="bars">${bars}${r.avg ? `<div class="avg" style="bottom:${avgPct*1.5}px"><span>avg</span></div>` : ''}</div>
+      <div class="blabels">${DAYS.map(d=>`<span>${d[0]}</span>`).join('')}</div>
+      <div class="stat" style="margin-top:12px"><span>Total game time</span><b style="color:var(--text)">${hm(r.total)}</b></div>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0">Most played</h2>
+      ${r.games.length ? r.games.slice(0,6).map(([t,ms]) => `
+        <div class="gl"><div class="top"><span>${esc(t)}</span><b>${hm(ms)}</b></div>
+        <div class="track"><i style="width:${ms/topMax*100}%;background:${colorFor(t)}"></i></div></div>`).join('')
+        : `<div class="empty">Nothing played in this period.</div>`}
+    </div>
+    <div class="tiles">
+      <div class="tile"><div class="k">Sessions</div><div class="v">${r.list.length}</div></div>
+      <div class="tile"><div class="k">Longest session</div><div class="v">${r.longest ? hm(r.longest.dur) : '—'}</div></div>
+      <div class="tile"><div class="k">Latest night</div><div class="v">${r.late ? r.late.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—'}</div></div>
+      <div class="tile"><div class="k">Biggest day</div><div class="v">${r.bestDay}</div></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <div class="sub" style="margin:0 0 4px">The verdict</div>
+      <div class="verdict">${esc(verdict(r.avg))}</div>
+    </div>
+    <button class="primary big" id="btnShareImg">Share my Game Time 📸</button>
+    <div class="row" style="margin-top:8px">
+      <button class="ghost" id="btnShareTxt">Share as text</button>
+      <button class="ghost" id="btnSaveImg">Save image</button>
+    </div>`;
+  if(demo) $('#btnDemoOff').onclick = () => { demo = null; renderReport(); };
+  $('#btnShareImg').onclick = () => shareReport(r, 'share');
+  $('#btnSaveImg').onclick = () => shareReport(r, 'save');
+  $('#btnShareTxt').onclick = async () => {
+    const t = reportText(r);
+    if(navigator.share){ try{ await navigator.share({ text:t }); }catch(e){} } else { await copy(t); toast('Copied — paste it anywhere'); }
+  };
+}
+document.querySelectorAll('#seg button').forEach(b => b.onclick = () => { rSel = b.dataset.r; renderReport(); });
+
+function appUrl(){ return location.protocol.startsWith('http') ? location.origin + location.pathname : ''; }
+function reportText(r){
+  const top = r.games.slice(0,3).map(([t,ms])=>`${t} ${hm(ms)}`).join(' · ');
+  let delta = '';
+  if(r.prev && rSel!=='all'){ const p = Math.round((r.total-r.prev)/r.prev*100); delta = ` (${p>=0?'▲':'▼'}${Math.abs(p)}% vs the week before)`; }
+  return `🎮 My Game Time — ${r.label.split(' · ')[0]}\n` +
+    `Total: ${hm(r.total)}${delta}\nDaily average: ${hm(r.avg)}\n` +
+    (top ? `Most played: ${top}\n` : '') +
+    (r.longest ? `Longest session: ${hm(r.longest.dur)}\n` : '') +
+    `Verdict: ${verdict(r.avg)}\n\n— via AFK by Samderverse ${appUrl()}`.trim();
+}
+
+function drawCard(r){
+  const W=1080, H=1350, c=document.createElement('canvas'); c.width=W; c.height=H;
+  const x=c.getContext('2d'); const F='system-ui,-apple-system,Segoe UI,Roboto,sans-serif';
+  const g=x.createRadialGradient(W/2,0,50,W/2,0,1100); g.addColorStop(0,'#4a1638'); g.addColorStop(1,'#0d0f14');
+  x.fillStyle=g; x.fillRect(0,0,W,H);
+  const tg=x.createLinearGradient(80,0,520,0); tg.addColorStop(0,'#ff3d7f'); tg.addColorStop(1,'#ffb800');
+  x.fillStyle=tg; x.font=`900 92px ${F}`; x.fillText('AFK',80,150);
+  x.fillStyle='#eef1f7'; x.font=`700 56px ${F}`; x.fillText('Game Time',290,148);
+  x.fillStyle='#8b93a7'; x.font=`500 34px ${F}`; x.fillText(r.label,80,210);
+  x.fillText('Daily average',80,300);
+  x.fillStyle='#eef1f7'; x.font=`900 120px ${F}`; x.fillText(hm(r.avg),80,420);
+  x.font=`600 36px ${F}`; x.fillStyle='#8b93a7'; x.fillText(`Total ${hm(r.total)} · ${r.list.length} session${r.list.length===1?'':'s'}`,80,480);
+  // bars
+  const bx=80, by=800, bw=920, bh=260, gap=24, cw=(bw-gap*6)/7, max=Math.max(...r.dayTotals,1);
+  r.byDay.forEach((d,i) => {
+    let y=by; const X=bx+i*(cw+gap);
+    x.fillStyle='#2a3040'; x.fillRect(X,by-3,cw,3);
+    Object.entries(d).forEach(([t,ms]) => { const h=ms/max*bh; x.fillStyle=colorFor(t); x.fillRect(X,y-h,cw,h); y-=h; });
+    x.fillStyle='#8b93a7'; x.font=`600 30px ${F}`; x.textAlign='center'; x.fillText(DAYS[i][0],X+cw/2,by+44); x.textAlign='left';
+  });
+  if(r.avg){ const ay=by-Math.min(1,r.avg/max)*bh; x.setLineDash([14,10]); x.strokeStyle='#2bd67b'; x.lineWidth=4; x.beginPath(); x.moveTo(bx,ay); x.lineTo(bx+bw,ay); x.stroke(); x.setLineDash([]); }
+  // top games
+  let y=920; const topMax=r.games[0]?.[1]||1;
+  r.games.slice(0,3).forEach(([t,ms]) => {
+    x.fillStyle='#eef1f7'; x.font=`700 36px ${F}`;
+    let name=t; while(x.measureText(name).width>700 && name.length>3) name=name.slice(0,-2)+'…';
+    x.fillText(name,80,y); x.textAlign='right'; x.fillText(hm(ms),1000,y); x.textAlign='left';
+    x.fillStyle='#1e2330'; x.fillRect(80,y+16,920,14); x.fillStyle=colorFor(t); x.fillRect(80,y+16,920*ms/topMax,14);
+    y+=86;
+  });
+  // verdict
+  x.fillStyle='#ffb800'; x.font=`800 38px ${F}`;
+  const words=verdict(r.avg).split(' '); let line='', ly=Math.max(y+20,1190);
+  words.forEach(w => { if(x.measureText(line+w).width>920){ x.fillText(line,80,ly); line=''; ly+=48; } line+=w+' '; });
+  x.fillText(line,80,ly);
+  x.fillStyle='#8b93a7'; x.font=`500 28px ${F}`; x.fillText('AFK by Samderverse',80,H-50);
+  return c;
+}
+async function shareReport(r, mode){
+  const c = drawCard(r);
+  const blob = await new Promise(res => c.toBlob(res,'image/png'));
+  const file = new File([blob], 'afk-game-time.png', { type:'image/png' });
+  if(mode==='share' && navigator.canShare && navigator.canShare({ files:[file] })){
+    try{ await navigator.share({ files:[file], text:`My Game Time 🎮 ${appUrl()}`.trim() }); }catch(e){}
+    return;
+  }
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='afk-game-time.png'; a.click();
+  toast(mode==='share' ? 'Saved image — share it from your photos' : 'Image saved');
+}
+
+function makeDemo(){
+  const games=['Grand Theft Auto VI','EA Sports FC 26','Minecraft'], out=[]; const start=weekStart(1);
+  for(let d=0; d<14; d++){
+    const day=start+d*DAY; if(day>Date.now()) break;
+    const n = Math.random()<.25 ? 0 : 1+Math.floor(Math.random()*2);
+    for(let k=0;k<n;k++){
+      const st = day + (18+Math.random()*4)*3600e3 - k*3*3600e3;
+      const t = games[Math.random()<.6?0:1+Math.floor(Math.random()*2)];
+      if(st < Date.now()) out.push({ gameId:'demo', title:t, start:st, dur:(0.5+Math.random()*3.5)*3600e3, recipients:2 });
+    }
+  }
+  return out;
+}
+
+/* ---------- CONTACTS ---------- */
+let editing = null;
+function renderContacts(){
+  $('#btnPickPhone').classList.toggle('hidden', !('contacts' in navigator && 'ContactsManager' in window));
+  $('#contactList').innerHTML = S.contacts.length ? S.contacts.map(c=>`
+    <div class="contact" data-id="${c.id}"><div class="avatar">${esc(c.name[0]||'?').toUpperCase()}</div>
+    <div class="cmeta"><div class="n">${esc(c.name)}</div><div class="p">${esc(c.phone||'No number — app will ask who')}</div></div>${viaChip(c.via)}</div>`).join('')
+    : `<div class="empty">No contacts yet.</div>`;
+  $('#contactList').querySelectorAll('.contact').forEach(el => el.onclick = () => openContact(S.contacts.find(c=>c.id===el.dataset.id)));
+}
+function openContact(c){
+  editing = c || null;
+  $('#cTitle').textContent = c ? 'Edit contact' : 'Add contact';
+  $('#cName').value = c?.name || ''; $('#cPhone').value = c?.phone || ''; $('#cVia').value = c?.via || 'wa';
+  $('#cDelete').classList.toggle('hidden', !c);
+  $('#dlgContact').showModal();
+}
+$('#btnAddContact').onclick = () => openContact();
+$('#cCancel').onclick = () => $('#dlgContact').close();
+$('#cSave').onclick = () => {
+  const name = $('#cName').value.trim(); if(!name) return toast('Give them a name');
+  const data = { name, phone:$('#cPhone').value.trim(), via:$('#cVia').value };
+  if(editing) Object.assign(editing, data);
+  else { const c = { id:uid(), ...data }; S.contacts.push(c); selectedContacts.add(c.id); }
+  save(); $('#dlgContact').close(); renderContacts(); renderPlay();
+};
+$('#cDelete').onclick = () => {
+  if(!confirm(`Delete ${editing.name}?`)) return;
+  S.contacts = S.contacts.filter(c=>c!==editing); selectedContacts.delete(editing.id);
+  save(); $('#dlgContact').close(); renderContacts();
+};
+$('#btnPickPhone').onclick = async () => {   // Android Chrome only
+  try{
+    const picked = await navigator.contacts.select(['name','tel'], { multiple:true });
+    picked.forEach(p => { if(p.tel?.[0]) S.contacts.push({ id:uid(), name:(p.name?.[0]||'Friend').split(' ')[0], phone:p.tel[0], via:'wa' }); });
+    save(); renderContacts(); toast(`Added ${picked.length}`);
+  }catch(e){}
+};
+
+/* ---------- SETTINGS ---------- */
+function renderSettings(){
+  $('#sMe').value = S.me; $('#sStart').value = S.start; $('#sEnd').value = S.end;
+  $('#sSig').checked = S.sig; $('#sAskBack').checked = S.askBack;
+}
+$('#btnSaveSettings').onclick = () => {
+  S.me = $('#sMe').value.trim(); S.start = $('#sStart').value || DEFAULT_START; S.end = $('#sEnd').value || DEFAULT_END;
+  S.sig = $('#sSig').checked; S.askBack = $('#sAskBack').checked; save(); toast('Saved');
+};
+$('#btnResetMsg').onclick = () => { $('#sStart').value = DEFAULT_START; $('#sEnd').value = DEFAULT_END; };
+$('#btnExport').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:'application/json'}));
+  a.download = `afk-backup-${new Date().toISOString().slice(0,10)}.json`; a.click();
+};
+$('#btnImport').onclick = () => $('#fileImport').click();
+$('#fileImport').onchange = async e => {
+  try{ const d = JSON.parse(await e.target.files[0].text()); S = Object.assign(defaults(), d); save(); toast('Imported'); show('play'); }
+  catch(err){ toast('That file did not look right'); }
+};
+
+/* ---------- boot ---------- */
+if(!S.me) setTimeout(()=>toast('Tip: set your name in ⚙️ Settings'), 600);
+show('play');
+</script>
+</body>
+</html>
